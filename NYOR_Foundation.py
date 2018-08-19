@@ -12,28 +12,54 @@ def get_shots(project):
 
 	return shots
 
+def get_renders(shot):
+	render_files = get_render_files(shot)
+
+	renders = {}
+
+	for render_comp_number, comp_files in groupby(render_files, lambda file: get_comp_number(file.name)):
+		comp_files = sorted(comp_files, key=lambda file: get_comp_number(file.name))
+
+		# comps = filter_by(render_files, "comp")
+		# print(len(comps[0][1]), len(comp_files))
+		# print(comps[0][1][0] == comp_files[0])
+		# print(comps[0][1][0].name, comp_files[0].name, sep="\n")
+
+		versions = {}
+
+		for render_version_number, version_files in groupby(comp_files, lambda file: get_version_number(file.name)):
+			version_files = sorted(version_files, key=lambda frame_file: get_version_number(frame_file.name))
+
+			render = Render(version_files)
+			version = Version(render_version_number, render)
+
+			versions[render_version_number] = version
+
+		renders[render_comp_number] = versions
+
+	return renders
+
 def get_comps(shot):
-	comps_files = list(shot.comps_path.glob(f"{shot.name}_comp_*.nk"))
+	renders = get_renders(shot)
+	comps_files = get_comps_files(shot)
 
 	comps = []
 
 	for comp_number, comp_versions in groupby(comps_files, lambda file: get_comp_number(file.name)):
 		comp_versions = sorted(comp_versions, key=lambda version_file: get_version_number(version_file.name))
-
-		# for version in comp_versions:
-		# 	version_number = get_version_number(version.name)
-
-		# print("New Comp: ", comp_number)
-		# print(str([comp_file.name for comp_file in comp_versions]))
+		
+		comp_renders = renders.get(comp_number)
 
 		versions = {}
+
 		for comp_version in comp_versions:
 			version_number = get_version_number(comp_version.name)
 
-			render = Render(get_frames(shot, comp_number, version_number))
-			version = Version(version_number, render)
+			if (comp_renders != None) and (comp_renders.get(version_number) != None):
+				versions[version_number] = comp_renders.get(version_number)
+				continue
 
-			versions[version.number] = version
+			versions[version_number] = Version(version_number, None)
 
 		comp = Comp(comp_number, versions)
 		comps.append(comp)
@@ -44,20 +70,20 @@ def get_comps(shot):
 # Models
 
 class Version:
-	def __init__(self, number, render):
+	def __init__(self, number, render=None):
 		self.number = number # Think about adding auto-incrementing option
-		self.render = render # Render()
+		self.render = render
 
 	def delete_render(self):
 		self.render.delete()
 
-	# def __str__(self):
-	# 	return f"Version: {self.number}"
+	def __str__(self):
+		return f"Version: {self.number}"
 
 class Comp:
 	def __init__(self, number, versions):
 		self.number = number
-		self.versions = {} #{version.number: version for version in versions} # {1: Version(), 2: Version() }
+		self.versions = versions
 
 	def get_highest_version(self):
 		# return max(self.versions).number
@@ -92,17 +118,17 @@ class Comp:
 		
 		pass
 
-	def scan_for_new_versions(self, add_new=True):
-		if add_new:
-			# self.add_new_version(version_number)
-			pass
+	def scan_for_new_versions(self):
 		pass
 
-	# def __str__(self):
-	# 	return f"comp: {self.number}"
+	def update_versions(self):
+		pass
+
+	def __str__(self):
+		return f"Comp: {self.number}"
 
 class Shot:
-	def __init__(self, path, renders_path=None):
+	def __init__(self, path, comps_path=None, renders_path=None):
 		self.path = path
 		self.name = self.path.name
 		self.comps_path = self.path/"nuke"/"script"
@@ -115,6 +141,15 @@ class Shot:
 		
 		# for index, comp in enumerate(self.comps):
 		# 	# print(index+1, "| comp:", comp)
+
+	def scan_for_new_comps(self):
+		pass
+
+	def update_comps(self):
+		pass
+
+	def delete_orfan_renders(self):
+		pass
 
 	def __str__(self):
 		return f"Shot: {self.name}"
@@ -130,17 +165,24 @@ class Project:
 
 		if list(self.path.glob("*.hrox")) == []:
 			input("No NukeStudio Project File(.hox) found on this folder. Press Enter to continue anyway.")
-
-		# Setting up available shots
+		
 		self.shots = get_shots(self)
 
-		for index, shot in enumerate(self.shots):
-			# print(index+1, "| comps:", shot.comps)
-			# print(shot.comps)
-			pass
+	def print_hierarchy(self):
+		print(f"{self} ({len(self.shots)} shots)", "\n")
+		for shot in self.shots:
+			print(f"{shot} ({len(shot.comps)} comps)")
+			
+			for comp in shot.comps:
+				print(f"  |_ {comp} ({len(comp.versions)} versions)")
+				
+				for version in comp.versions:
+					print(f"    |_ {comp.versions[version]} | Render: {comp.versions[version].render}")
+
+			print("\n")
 
 	def __str__(self):
-		return f"(Project) {self.name}"
+		return f"Project: {self.name}"
 
 class ProjectsLibrary:
 	def __init__(self, name, path):
@@ -148,24 +190,4 @@ class ProjectsLibrary:
 		self.name = name
 
 	def __str__(self):
-		return f"(Project Library) {self.name}"
-
-# -------------------------------------------------------------------------------
-# Project Settings
-
-film_projects = ProjectsLibrary("Filmes", "D:/Projetos/Ativos/Filmes")
-
-# Should be the same as project's root folder
-project_name = "2018 Neptunea"
-NS_folder = "VFX/NUKE"
-
-project = Project(film_projects, project_name, NS_folder)
-
-print(len(project.shots))
-for shot in project.shots:
-	print(f"shot: {shot.name} ({len(shot.comps)} comps)")
-	for comp in shot.comps:
-		print("comp:", comp.number)
-
-# for frame in list_of_frames:
-# 	if file is
+		return f"Project Library: {self.name}"

@@ -3,32 +3,34 @@ from pathlib import Path, PurePath
 
 from NYOR_Foundation import *
 
+# -------------------------------------------------------------------------------
 # NYOR / Nyor / N.Y.O.R. | Nuke Your Old Renders
-# Deletes every render in your NukeStudio project except the one for your highest version.
+#
+# Deletes every render in your NukeStudio project except the one for the highest version of each comp.
+#
+# -------------------------------------------------------------------------------
+# Tested:
+# Python 3.6
+# Nuke 11.1v4
+#
+# -------------------------------------------------------------------------------
+# TODO:
+# - Commandline interface: confirm project and files before deleting
+# - Make Send2Trash optional
+#
+# -------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------
-frame_file = File(path=f"{projects_folder}/{project_folder}/{NS_folder}/WARP/nuke/renders/WARP_comp_2_v01.0181.dpx")
-frame = Frame(frame_file)
+# Project Settings
+# project_name: Name should be the same as project's folder name
+# NS_folder: NukeStudio project root folder
 
-comp_number = get_comp_number(frame.file.name)
-version_number = get_version_number(frame.file.name)
-frame_number = get_frame_number(frame.file.name, original_string=True)
+film_projects = ProjectsLibrary("Filmes", "D:/Projetos/Ativos/Filmes")
 
-print(frame.file.name)
-print(comp_number, version_number, frame_number)
+project_name = "2018 Neptunea"
+NS_folder = "VFX/NUKE"
 
-# Project & Shots Setup
-# project = Project(path=f"{projects_folder}/{project_folder}/{NS_folder}")
+project = Project(film_projects, project_name, NS_folder)
 
-# shots = []
+project.print_hierarchy()
 
-# for shot in shots_folders:
-# 	new_shot = Shot(path=project_root / shot, name=shot, )
-# 	shots.append(new_shot)
-
-# for frame in list_of_frames:
-# 	if file is
-
-# Commandline interface: confirm project and files before deleting
-
-# Make Send2Trash optional

@@ -7,7 +7,7 @@ from send2trash import send2trash
 # Utilities
 
 def get_tag_value(file_name, tag_name, original_string=False):
-	render_tag = NS_render_tags.tags[tag_name]
+	render_tag = NS_render_settings.tags[tag_name]
 
 	start = file_name.find(render_tag["start_marker"])
 	if start == -1:
@@ -77,79 +77,107 @@ def get_frame_number(file_name, original_string=False):
 
 # -------------------------------------------------------------------------------
 
-def get_frames(shot, comp_number, comp_version_number):
-	render_files = list(shot.renders_path.glob(f"{shot.name}_comp_*.dpx"))
-	counter = 0
-	for render_comp_number, comp_files in groupby(render_files, lambda file: get_comp_number(file.name)):
-		comp_files = sorted(comp_files, key=lambda file: get_comp_number(file.name))
+def get_comps_files(shot):
+	comps_files = list(shot.comps_path.glob(f"{shot.name}_comp_*.nk"))
 
-		print("\n", "-"*30)
-		print(f"{shot.name} | Comp Number: {comp_number} | Render Comp Number: {render_comp_number}")
-		# print("Comp Files:", len(comp_files))
+	return comps_files
 
-		if render_comp_number == comp_number:
-			for render_version_number, version_files in groupby(comp_files, lambda file: get_version_number(file.name)):
-				version_files = sorted(version_files, key=lambda frame_file: get_version_number(frame_file.name))
+def get_render_files(shot, extension="dpx"):
+	'''
+		Arguments: shot, extension
 
-				if render_version_number == comp_version_number:
-					print(f"MATCH | Render Version: {render_version_number} / Comp Version: {comp_version_number}")
-					# print("Version Files:", len(version_files))
-					return version_files
+		Valid "extension" values(default: "dpx"):
+			"<file_ext>"
+			"all"
+	'''
 
-				else:
-					print(f"NOT MATCH | Render Version: {render_version_number} / Comp Version: {comp_version_number}")
-					return []
+	if (extension not in NS_render_settings.extensions) and (extension != "all"):
+		raise Exception(f"get_render_files Error: Unknown file extension '{extension}'.")
+	
+	if extension == "all":
+		render_files = []
 		
-		else:
-			pass
-		# for index, comp_version in enumerate(comp_files):
-		# 	print(index+1, comp_version)
+		for extension in NS_render_settings.extensions:
+			render_files.append(list(shot.renders_path.glob(f"{shot.name}_comp_*.{extension}")))
 
-		if counter == 1:
-			assert False
+		return render_files
+	
+	render_files = list(shot.renders_path.glob(f"{shot.name}_comp_*.{extension}"))
 
-		counter += 1
+	return render_files
 
-	# for file in render_files:
-	# 	frames = Frame()
-	pass
+# -------------------------------------------------------------------------------
+
+def filter_by(element, filter_type):
+	'''
+		Possible filter types: "comp"; "version"
+		"comp": should be applied to an 'element' that is a regular list of paths.
+		"version": should be applied to an 'element' that is a regular list of paths.
+	'''
+	if filter_type == "comp":
+		comps = []
+		for comp_number, comp_files in groupby(element, lambda file: get_comp_number(file.name)):
+			comp_files = sorted(comp_files, key=lambda file: get_comp_number(file.name))
+
+			comps.append((comp_number, comp_files))
+
+		return comps
+
+	if filter_type == "version":
+		versions = []
+		for version_number, version_files in groupby(element[1], lambda file: get_version_number(file.name)):
+			version_files = sorted(version_files, key=lambda file: get_version_number(file.name))
+
+			versions.append((version_number, version_files))
+
+		return versions
+
+	else:
+		raise Exception(f"filter_by Error: Invalid filter type '{filter_type}'.")
 
 # -------------------------------------------------------------------------------
 # Models
 
-class RenderTagsCollection:
+class RenderSettings:
 	def __init__(self, name):
 		self.name = name
 		self.tags = {}
+		self.extensions = []
 
-	def add(self, name, start_marker, end_marker):
+	def add_tag(self, name, start_marker, end_marker):
 		if name in self.tags:
-			raise Exception("This Tag is already in this collection.")
+			raise Exception(f"RenderSettings.add_tag Error: Tag '{name}' is already in the settings.")
 		
 		self.tags[name] = {"start_marker": start_marker, "end_marker": end_marker}
 
-	def dict_add(self, tags_dict):
+	def add_extension(self, extension):
+		if extension in self.extensions:
+			raise Exception(f"RenderSettings.add_extension Error: Extension '{extension}' is already in the settings.")
+		
+		self.extensions.append(extension)
+
+	def list_extensions(self):
 		pass
 
 	def __str__(self):
-		return f"RenderTagsCollection: {str([render_tag for render_tag in self.tags])}"
+		return f"RenderSettings: {self.name}"
 
-class File:
-	def __init__(self, path):
-		self.path = Path(path)
-		self.name = self.path.name
+# class File:
+# 	def __init__(self, path):
+# 		self.path = Path(path)
+# 		self.name = self.path.name
 
-	def __str__(self):
-		return f"File: {self.name}"
+# 	def __str__(self):
+# 		return f"File: {self.name}"
 
-class Frame:
-	def __init__(self, file):
-		self.file = file
-		self.string = get_tag_value(self.file.name, "frame_number", original_string=True)
-		self.number = get_tag_value(self.file.name, "frame_number")
+# class Frame:
+# 	def __init__(self, file):
+# 		self.file = file
+# 		self.string = get_tag_value(self.file.name, "frame_number", original_string=True)
+# 		self.number = get_tag_value(self.file.name, "frame_number")
 
-	def __str__(self):
-		return str(f"Frame {self.string}")
+# 	def __str__(self):
+# 		return str(f"Frame {self.string}")
 
 class Render:
 	def __init__(self, frames, extension="dpx"):
@@ -161,10 +189,16 @@ class Render:
 			# frame.unlink()
 			send2trash(str(frame.resolve()))
 
-# -------------------------------------------------------------------------------
-# NukeStudio Render Tags Collection Setup
+	def __str__(self):
+		return f"Render ({len(self.frames)} frames)"
 
-NS_render_tags = RenderTagsCollection("NS_render_tags")
-NS_render_tags.add("comp_number", "_comp_", "_v")
-NS_render_tags.add("version_number", "_v", ".")
-NS_render_tags.add("frame_number", ".", ".")
+# -------------------------------------------------------------------------------
+# NukeStudio RenderSettings setup
+
+NS_render_settings = RenderSettings("NS_render_settings")
+
+NS_render_settings.add_extension("dpx")
+
+NS_render_settings.add_tag("comp_number", "_comp_", "_v")
+NS_render_settings.add_tag("version_number", "_v", ".")
+NS_render_settings.add_tag("frame_number", ".", ".")
