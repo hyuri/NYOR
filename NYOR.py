@@ -5,19 +5,16 @@ from NYOR_Foundation import *
 
 # -------------------------------------------------------------------------------
 # NYOR / Nyor / N.Y.O.R. | Nuke Your Old Renders
-#
 # Deletes every render in your NukeStudio project except the one for the highest version of each comp.
-#
 # -------------------------------------------------------------------------------
 # Tested:
 # Python 3.6
 # Nuke 11.1v4
-#
 # -------------------------------------------------------------------------------
 # TODO:
+# - Add logging
 # - Commandline interface: confirm project and files before deleting
 # - Make Send2Trash optional
-#
 # -------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------
@@ -27,10 +24,14 @@ from NYOR_Foundation import *
 
 film_projects = ProjectsLibrary("Filmes", "D:/Projetos/Ativos/Filmes")
 
-project_name = "2018 Neptunea"
+project_folder = "2018 Neptunea"
 NS_folder = "VFX/NUKE"
 
-project = Project(film_projects, project_name, NS_folder)
+# -------------------------------------------------------------------------------
+# Operations
 
-project.print_hierarchy()
+aum_vfx = Project(film_projects, project_folder, NS_folder)
 
+# aum_vfx.print_hierarchy()
+
+aum_vfx.delete_renders_of_older_versions()

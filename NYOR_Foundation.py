@@ -75,6 +75,10 @@ class Version:
 		self.render = render
 
 	def delete_render(self):
+		if self.render == None:
+			print(f"(i) delete_render: Version {self.number} has no renders.")
+			return
+		
 		self.render.delete()
 
 	def __str__(self):
@@ -85,26 +89,18 @@ class Comp:
 		self.number = number
 		self.versions = versions
 
-	def get_highest_version(self):
-		# return max(self.versions).number
-		pass
+	def get_highest_version_number(self):
+		return max(self.versions).number
 
-	def get_number_of_versions(self):
-		return len(self.versions)
-
-	def delete_version(self, version_number):
-		self.versions[version_number].delete_render()
-		del self.versions[version_number]
-
-	def delete_old_versions(self):
+	def delete_renders_of_older_versions(self):
+		print(f"Comp: {self.number} | Versions: {len(self.versions)}")
 		for version in self.versions:
-			# print(version.render)
-
-			if version.number < self.get_highest_version():
-				self.delete_version(version.number)
+			if version < max(self.versions):
+				print(f"Version {version} | Deleting Render.")
+				self.versions[version].delete_render()
 
 			else:
-				pass
+				print(f"Version {version} (Highest) | Not Deleting Renders.")
 
 	def add_new_version(self, version_number):
 		# Should scan through the folder for files (glob?)
@@ -115,7 +111,6 @@ class Comp:
 		# 	new_render = Render(frames=???)
 		# 	new_version = Version(version_number, new_render)
 		# 	self.versions[version_number] = new_version
-		
 		pass
 
 	def scan_for_new_versions(self):
@@ -136,19 +131,15 @@ class Shot:
 		
 		self.comps = get_comps(self)
 
-		# Setting up available comps
-		# self.comps = [Comp(path=shot_path) for shot_path in self.path]
-		
-		# for index, comp in enumerate(self.comps):
-		# 	# print(index+1, "| comp:", comp)
+	def delete_renders_of_older_versions(self):
+		print(f"Shot: {self.name}")
+		for comp in self.comps:
+			comp.delete_renders_of_older_versions()
 
 	def scan_for_new_comps(self):
 		pass
 
 	def update_comps(self):
-		pass
-
-	def delete_orfan_renders(self):
 		pass
 
 	def __str__(self):
@@ -158,10 +149,10 @@ class Shot:
 		return f"Shot: {self.name}"
 
 class Project:
-	def __init__(self, library, name, NS_folder):
+	def __init__(self, library, folder_name, NS_folder):
 		self.library = library
-		self.name = name
-		self.path = self.library.path/self.name/NS_folder
+		self.folder_name = folder_name
+		self.path = self.library.path/self.folder_name/NS_folder
 
 		if list(self.path.glob("*.hrox")) == []:
 			input("No NukeStudio Project File(.hox) found on this folder. Press Enter to continue anyway.")
@@ -181,8 +172,15 @@ class Project:
 
 			print("\n")
 
+	def delete_renders_of_older_versions(self):
+		for shot in self.shots:
+			shot.delete_renders_of_older_versions()
+
+	def delete_orfan_renders(self):
+		pass
+
 	def __str__(self):
-		return f"Project: {self.name}"
+		return f"Project: {self.folder_name}"
 
 class ProjectsLibrary:
 	def __init__(self, name, path):

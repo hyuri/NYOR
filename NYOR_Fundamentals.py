@@ -185,9 +185,13 @@ class Render:
 		self.extension = extension
 
 	def delete(self):
+		print(f"Frames: {len(self.frames)}")
 		for frame in self.frames:
 			# frame.unlink()
-			send2trash(str(frame.resolve()))
+			# send2trash(str(frame.resolve()))
+			print("Frame Deleted.")
+		
+		print("Render Deleted.")
 
 	def __str__(self):
 		return f"Render ({len(self.frames)} frames)"
