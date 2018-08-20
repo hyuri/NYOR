@@ -8,7 +8,7 @@ from NYOR_Fundamentals import *
 # Utilities
 
 def get_shots(project):
-	shots = [Shot(item) for item in project.path.iterdir() if item.is_dir()]
+	shots = [Shot(item, comps_path=project.comps_path, renders_path=project.renders_path) for item in project.path.iterdir() if item.is_dir()]
 
 	return shots
 
@@ -132,11 +132,11 @@ class Comp:
 		return f"Comp: {self.number}"
 
 class Shot:
-	def __init__(self, path, comps_path=None, renders_path=None):
+	def __init__(self, path, comps_path, renders_path):
 		self.path = path
 		self.name = self.path.name
-		self.comps_path = self.path/"nuke"/"script"
-		self.renders_path = self.path/"nuke"/"renders"
+		self.comps_path = self.path/comps_path
+		self.renders_path = self.path/renders_path
 		
 		self.comps = get_comps(self)
 
@@ -163,6 +163,9 @@ class Project:
 		self.folder_name = folder_name
 		self.path = self.library.path/self.folder_name/NS_folder
 
+		self.comps_path = PurePath("nuke/script")
+		self.renders_path = PurePath("nuke/renders")
+
 		if list(self.path.glob("*.hrox")) == []:
 			input("No NukeStudio Project File(.hox) found on this folder. Press Enter to continue anyway.")
 		
@@ -184,6 +187,22 @@ class Project:
 	def delete_renders_of_older_versions(self):
 		for shot in self.shots:
 			shot.delete_renders_of_older_versions()
+
+	def delete_render_tmp_files(self, send_to_trash=False):
+		tmp_files = get_tmp_files(self)
+
+		if tmp_files == []:
+			print(f"No tmp files found.")
+			return
+
+		for tmp_file in tmp_files:
+			print(f"Deleting tmp_file: {str(tmp_file.name)}")
+
+			if not send_to_trash:
+				tmp_file.unlink()
+				return
+
+			send2trash(str(tmp_file.resolve()))
 
 	def delete_orfan_renders(self):
 		pass

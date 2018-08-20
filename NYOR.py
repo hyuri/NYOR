@@ -32,6 +32,8 @@ NS_folder = "VFX/NUKE"
 
 aum_vfx = Project(film_projects, project_folder, NS_folder)
 
-# aum_vfx.print_hierarchy()
+aum_vfx.print_hierarchy()
 
-aum_vfx.delete_renders_of_older_versions()
+# aum_vfx.delete_renders_of_older_versions()
+
+# aum_vfx.delete_render_tmp_files()

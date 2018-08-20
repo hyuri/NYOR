@@ -106,6 +106,11 @@ def get_render_files(shot, extension="dpx"):
 
 	return render_files
 
+def get_tmp_files(project):
+	tmp_files = list(project.path.glob(f"*/{project.renders_path}/*_comp_*.tmp"))
+
+	return tmp_files
+
 # -------------------------------------------------------------------------------
 
 def filter_by(element, filter_type):
@@ -156,7 +161,7 @@ class RenderSettings:
 		
 		self.extensions.append(extension)
 
-	def list_extensions(self):
+	def extensions_list(self):
 		pass
 
 	def __str__(self):
@@ -184,16 +189,28 @@ class Render:
 		self.frames = frames # [sorted_list_of_frames]
 		self.extension = extension
 
-	def delete(self):
+	def delete(self, send_to_trash=True):
 		for frame in self.frames:
-			# frame.unlink()
+			print(f"Deleting frame. {str(frame.resolve())}")
+
+			if not send_to_trash:
+				frame.unlink()
+
 			send2trash(str(frame.resolve()))
-			# print(f"Deleting frame. {str(frame.resolve())}")
 
-			tmp_file = list(frame.parent.glob(f"{frame.name}*.tmp"))[0]
+			tmp_file = list(frame.parent.glob(f"{frame.name}*.tmp"))
 
+			if tmp_file == []:
+				return
+			
+			tmp_file = tmp_file[0]
+
+			if not send_to_trash:
+				tmp_file.unlink()
+			
+			print(f"Deleting tmp_file: {str(tmp_file.name)}")
 			send2trash(str(tmp_file.resolve()))
-			# print(f"Deleting tmp_file: {str(tmp_file.resolve())}")
+
 			# print("Frame Deleted.")
 
 	def __str__(self):
