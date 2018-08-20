@@ -74,13 +74,13 @@ class Version:
 		self.number = number
 		self.render = render
 
-	def delete_render(self):
+	def delete_render(self, send_to_trash=True):
 		if self.render == None:
 			print(f"        |_ No renders to delete.")
 			print("\n")
 			return
 		
-		self.render.delete()
+		self.render.delete(send_to_trash)
 		print(f"        |_ Frames: {len(self.render.frames)}")
 		print("        |_ Render Deleted.")
 		print("\n")
@@ -96,15 +96,15 @@ class Comp:
 	def get_highest_version_number(self):
 		return max(self.versions)
 
-	def delete_renders_of_older_versions(self):
+	def delete_renders_of_older_versions(self, send_to_trash=True):
 		print(f"  |_ Comp: {self.number} (Versions: {len(self.versions)})")
 		
-		for version in self.versions:	
+		for version in self.versions:
 			if version < max(self.versions):
 				print(f"    |_ Version {version}")
 				print(f"      |_ Deleting Render")
 				
-				self.versions[version].delete_render()
+				self.versions[version].delete_render(send_to_trash)
 
 			else:
 				print(f"    |_ Version {version} (Highest)")
@@ -140,10 +140,10 @@ class Shot:
 		
 		self.comps = get_comps(self)
 
-	def delete_renders_of_older_versions(self):
+	def delete_renders_of_older_versions(self, send_to_trash=True):
 		print(f"Shot: {self.name}")
 		for comp in self.comps:
-			comp.delete_renders_of_older_versions()
+			comp.delete_renders_of_older_versions(send_to_trash)
 
 	def scan_for_new_comps(self):
 		pass
@@ -184,9 +184,9 @@ class Project:
 
 			print("\n")
 
-	def delete_renders_of_older_versions(self):
+	def delete_renders_of_older_versions(self, send_to_trash=True):
 		for shot in self.shots:
-			shot.delete_renders_of_older_versions()
+			shot.delete_renders_of_older_versions(send_to_trash)
 
 	def delete_render_tmp_files(self, send_to_trash=False):
 		tmp_files = get_tmp_files(self)

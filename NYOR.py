@@ -34,6 +34,8 @@ aum_vfx = Project(film_projects, project_folder, NS_folder)
 
 aum_vfx.print_hierarchy()
 
+# send_to_trash argument is set to "True" by default.
 # aum_vfx.delete_renders_of_older_versions()
 
+# send_to_trash argument is set to "True" by default.
 # aum_vfx.delete_render_tmp_files()
