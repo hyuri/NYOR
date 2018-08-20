@@ -187,9 +187,8 @@ class Render:
 	def delete(self):
 		for frame in self.frames:
 			# frame.unlink()
-			# send2trash(str(frame.resolve()))
+			send2trash(str(frame.resolve()))
 			# print("Frame Deleted.")
-			pass
 
 	def __str__(self):
 		return f"Render ({len(self.frames)} frames)"
