@@ -71,15 +71,19 @@ def get_comps(shot):
 
 class Version:
 	def __init__(self, number, render=None):
-		self.number = number # Think about adding auto-incrementing option
+		self.number = number
 		self.render = render
 
 	def delete_render(self):
 		if self.render == None:
-			print(f"(i) delete_render: Version {self.number} has no renders.")
+			print(f"        |_ No renders to delete.")
+			print("\n")
 			return
 		
 		self.render.delete()
+		print(f"        |_ Frames: {len(self.render.frames)}")
+		print("        |_ Render Deleted.")
+		print("\n")
 
 	def __str__(self):
 		return f"Version: {self.number}"
@@ -90,17 +94,22 @@ class Comp:
 		self.versions = versions
 
 	def get_highest_version_number(self):
-		return max(self.versions).number
+		return max(self.versions)
 
 	def delete_renders_of_older_versions(self):
-		print(f"Comp: {self.number} | Versions: {len(self.versions)}")
-		for version in self.versions:
+		print(f"  |_ Comp: {self.number} (Versions: {len(self.versions)})")
+		
+		for version in self.versions:	
 			if version < max(self.versions):
-				print(f"Version {version} | Deleting Render.")
+				print(f"    |_ Version {version}")
+				print(f"      |_ Deleting Render")
+				
 				self.versions[version].delete_render()
 
 			else:
-				print(f"Version {version} (Highest) | Not Deleting Renders.")
+				print(f"    |_ Version {version} (Highest)")
+
+		print("\n")
 
 	def add_new_version(self, version_number):
 		# Should scan through the folder for files (glob?)
