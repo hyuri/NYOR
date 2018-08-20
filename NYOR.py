@@ -5,7 +5,7 @@ from NYOR_Foundation import *
 
 # -------------------------------------------------------------------------------
 # NYOR / Nyor / N.Y.O.R. | Nuke Your Old Renders
-# Deletes every render in your NukeStudio project except the one for the highest version of each comp.
+# Deletes every render(and .tmp files) in your NukeStudio project except the one for the highest version of each comp.
 # -------------------------------------------------------------------------------
 # Tested:
 # Python 3.6
