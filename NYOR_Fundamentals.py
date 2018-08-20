@@ -188,6 +188,12 @@ class Render:
 		for frame in self.frames:
 			# frame.unlink()
 			send2trash(str(frame.resolve()))
+			# print(f"Deleting frame. {str(frame.resolve())}")
+
+			tmp_file = list(frame.parent.glob(f"{frame.name}*.tmp"))[0]
+
+			send2trash(str(tmp_file.resolve()))
+			# print(f"Deleting tmp_file: {str(tmp_file.resolve())}")
 			# print("Frame Deleted.")
 
 	def __str__(self):
