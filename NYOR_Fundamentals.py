@@ -191,7 +191,7 @@ class Render:
 
 	def delete(self, send_to_trash=True):
 		for frame in self.frames:
-			print(f"Deleting frame. {str(frame.resolve())}")
+			# print(f"Deleting frame. {str(frame.resolve())}")
 
 			if not send_to_trash:
 				frame.unlink()
@@ -201,7 +201,7 @@ class Render:
 			tmp_file = list(frame.parent.glob(f"{frame.name}*.tmp"))
 
 			if tmp_file == []:
-				return
+				continue
 			
 			tmp_file = tmp_file[0]
 
