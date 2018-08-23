@@ -13,8 +13,6 @@ from NYOR_Foundation import *
 # -------------------------------------------------------------------------------
 # TODO:
 # - Add logging
-# - Commandline interface: confirm project and files before deleting
-# - Make Send2Trash optional
 # -------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------
@@ -32,10 +30,54 @@ NS_folder = "VFX/NUKE"
 
 aum_vfx = Project(film_projects, project_folder, NS_folder)
 
-aum_vfx.print_hierarchy()
+options = {
+			1: {
+				"title": "Print Hierarchy",
+				"uid": "print_hierarchy",
+				"command": aum_vfx.print_hierarchy
+			},
+			2: {
+				"title": "Delete Renders of Old Versions",
+				"uid": "del_all_renders_old_versions",
+				"command": aum_vfx.delete_renders_of_older_versions # send_to_trash is set to "True" by default.
+			},
+			3: {
+				"title": "Delete Tmp Render Files",
+				"uid": "del_all_render_tmp_files",
+				"command": aum_vfx.delete_render_tmp_files # send_to_trash is set to "True" by default.
+			},
+			4: {
+				"title": "Exit.",
+				"uid": "exit",
+				"command": exit
+			}
+		}
 
-# send_to_trash argument is set to "True" by default.
-# aum_vfx.delete_renders_of_older_versions()
+def print_options():
+		print("-"*30)
+		print("OPTIONS:")
+		for option in options:
+			print(option, options[option]["title"])
+		print("\n")
 
-# send_to_trash argument is set to "True" by default.
-# aum_vfx.delete_render_tmp_files()
+while True:
+	print_options()
+
+	try:
+		user_choice = int(input("Choose a number and press Enter.\n"))
+
+		if (options[user_choice]["uid"] == "del_all_renders_old_versions") or (options[user_choice]["uid"] == "del_all_render_tmp_files"):
+			confirmation = input(f"{options[user_choice]['title']}. Are you sure?\n(Type Yes to confirm and press Enter.)\n")
+
+			if confirmation in ["Yes", "yes", "YES", "y"]:
+				options[user_choice]["command"]()
+				continue
+
+		options[user_choice]["command"]()
+	
+	except (KeyError, ValueError):
+		print("\n {{{ (!) Invalid option. Try again! }}}\n")
+
+	except PermissionError:
+		print("\n {{{ (!) PermissionError. A program might have this file open. }}}\n")
+		break
