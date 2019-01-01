@@ -47,6 +47,11 @@ options = {
 				"command": aum_vfx.delete_render_tmp_files # send_to_trash is set to "True" by default.
 			},
 			4: {
+				"title": "Delete Renders of Latest Version",
+				"uid": "del_all_renders_latest_version",
+				"command": aum_vfx.delete_renders_of_latest_version # send_to_trash is set to "True" by default.
+			},
+			5: {
 				"title": "Exit.",
 				"uid": "exit",
 				"command": exit
@@ -70,14 +75,14 @@ while True:
 			confirmation = input(f"{options[user_choice]['title']}. Are you sure?\n(Type Yes to confirm and press Enter.)\n")
 
 			if confirmation in ["Yes", "yes", "YES", "y"]:
-				options[user_choice]["command"]()
+				try:
+					options[user_choice]["command"]()
+				except PermissionError:
+					print("\n {{{ (!) PermissionError. A program might have this file open. }}}\n")
+				
 				continue
 
 		options[user_choice]["command"]()
 	
 	except (KeyError, ValueError):
 		print("\n {{{ (!) Invalid option. Try again! }}}\n")
-
-	except PermissionError:
-		print("\n {{{ (!) PermissionError. A program might have this file open. }}}\n")
-		break

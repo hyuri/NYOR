@@ -111,6 +111,21 @@ class Comp:
 
 		print("\n")
 
+	def delete_renders_of_latest_version(self, send_to_trash=True):
+		print(f"  |_ Comp: {self.number} (Versions: {len(self.versions)})")
+		
+		for version in self.versions:
+			if version == max(self.versions):
+				print(f"    |_ Version {version}")
+				print(f"      |_ Deleting Render")
+				
+				self.versions[version].delete_render(send_to_trash)
+
+			else:
+				print(f"    |_ Version {version} (Not Highest)")
+
+		print("\n")
+
 	def add_new_version(self, version_number):
 		# Should scan through the folder for files (glob?)
 		# and return some kind of error or message if version is not found on disk
@@ -144,6 +159,11 @@ class Shot:
 		print(f"Shot: {self.name}")
 		for comp in self.comps:
 			comp.delete_renders_of_older_versions(send_to_trash)
+
+	def delete_renders_of_latest_version(self, send_to_trash=True):
+		print(f"Shot: {self.name}")
+		for comp in self.comps:
+			comp.delete_renders_of_latest_version(send_to_trash)
 
 	def scan_for_new_comps(self):
 		pass
@@ -187,6 +207,10 @@ class Project:
 	def delete_renders_of_older_versions(self, send_to_trash=True):
 		for shot in self.shots:
 			shot.delete_renders_of_older_versions(send_to_trash)
+
+	def delete_renders_of_latest_version(self, send_to_trash=True):
+		for shot in self.shots:
+			shot.delete_renders_of_latest_version(send_to_trash)
 
 	def delete_render_tmp_files(self, send_to_trash=False):
 		tmp_files = get_tmp_files(self)
