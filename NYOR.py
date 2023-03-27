@@ -85,7 +85,7 @@ while True:
 		if (options[user_choice]["uid"] == "del_all_renders_old_versions") or (options[user_choice]["uid"] == "del_all_render_tmp_files"):
 			confirmation = input(f"{options[user_choice]['title']}. Are you sure?\n(Type Yes to confirm and press Enter.)\n")
 
-			if confirmation in ["Yes", "yes", "YES", "y"]:
+			if confirmation.lower() in ["yes", "y"]:
 				try:
 					options[user_choice]["command"]()
 				except PermissionError:
